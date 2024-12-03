@@ -1,7 +1,7 @@
 from flask_app import FlaskApp
 from flask import *
 
-class loginFeatures(FlaskApp):
+class LoginFeatures(FlaskApp):
     def login(self):
         if request.method == 'POST':
             pass
