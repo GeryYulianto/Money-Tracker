@@ -2,7 +2,7 @@
 Workflow new folder
 1. Buat folder di directorymu
 2. Pake git bash cd ke folder tersebut (cd path)
-3. git clone https://github.com/GeryYulianto/membershipSystem
+3. git clone https://github.com/GeryYulianto/Money-Tracker
 
 Workflow push git
 1. pastiin udah di folder hasil clone (cd yourpath/membershipSystem)
