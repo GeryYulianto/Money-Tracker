@@ -15,24 +15,75 @@ const date = ref();
 <script>
     const app = Vue.createApp({
         components: { VueDatePicker },
-    }).mount("#app");
+    })
 </script>
 
 <template>
-    <div class="filter d-flex">
-        <div class='filter-date'>
+    <div class="filter d-flex m-3">
+        <div class='filter-date d-flex gap-2 me-2'>
             <div class="start-date">
                 <Datepicker v-model="date" />
             </div>
             <div class="end-date">
                 <Datepicker v-model="date" />
             </div>
-            <button type="submit">Filter</button>
         </div>
+        <div class="category-filter d-flex gap-2 me-2">
+          <div class="form-check w-100 mw-100"><input class="form-check-input" type="checkbox" value="utilities" id="flexCheckChecked" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+              Utilities
+            </label>
+          </div>
+          <div class="form-check w-100 mw-100"><input class="form-check-input" type="checkbox" value="education" id="flexCheckChecked" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+              Education
+            </label>
+          </div>
+          <div class="form-check w-100 mw-100"><input class="form-check-input" type="checkbox" value="entertainment" id="flexCheckChecked" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+              Entertainment
+            </label>
+          </div>
+          <div class="form-check w-100 mw-100"><input class="form-check-input" type="checkbox" value="food" id="flexCheckChecked" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+              Food
+            </label>
+          </div>
+          <div class="form-check w-100 mw-100"><input class="form-check-input" type="checkbox" value="health" id="flexCheckChecked" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+              health
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success">Filter</button>
     </div>
+    <table class="table m-5">
+      <thead>
+        <tr>
+          <th scope="col" class="table-primary">Utilities <button class="btn btn-dark">+</button></th>
+          <th scope="col" class="table-success">Education <button class="btn btn-dark">+</button></th>
+          <th scope="col" class="table-warning">Entertainment <button class="btn btn-dark">+</button></th>
+          <th scope="col" class="table-info">Food <button class="btn btn-dark">+</button></th>
+          <th scope="col" class="table-danger">Health <button class="btn btn-dark">+</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row" class="table-primary"></th>
+          <th class="table-success"></th>
+          <th class="table-warning"></th>
+          <th class="table-info"></th>
+          <th class="table-danger"></th>
+        </tr>
+      </tbody>
+    </table>
   </template>
 
 <style scoped>
+th button {
+  padding: 0rem 0.3rem; /* Adjust padding as needed */
+}
+
 h1 {
   font-weight: 500;
   font-size: 2.6rem;
