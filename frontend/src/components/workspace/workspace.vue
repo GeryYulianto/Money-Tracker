@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import Datepicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
-const date = ref();
+const startDate = ref();
+const endDate = ref()
 // defineProps({
 //   msg: {
 //     type: String,
@@ -13,19 +14,45 @@ const date = ref();
 </script>
 
 <script>
-    const app = Vue.createApp({
-        components: { VueDatePicker },
-    })
+import axios from "axios";
+const app = Vue.createApp({
+    components: { VueDatePicker },
+})
+
+export default {
+  data() {
+    return {
+      transactions: [],
+    }
+  },
+  methods: {
+    fetchTransactions() {
+      const path = 'http://127.0.0.1:8000/transactions'
+      axios
+        .get(path)
+        .then((res) => {this.transactions = res.data
+          console.log(res.data)
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    },
+    //Add other methods
+  },
+  created() {
+    this.fetchTransactions()
+  }
+}
 </script>
 
 <template>
     <div class="filter d-flex m-3">
         <div class='filter-date d-flex gap-2 me-2'>
             <div class="start-date">
-                <Datepicker v-model="date" />
+                <Datepicker v-model="startDate" />
             </div>
             <div class="end-date">
-                <Datepicker v-model="date" />
+                <Datepicker v-model="endDate" />
             </div>
         </div>
         <div class="category-filter d-flex gap-2 me-2">
@@ -68,12 +95,16 @@ const date = ref();
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row" class="table-primary"></th>
-          <th class="table-success"></th>
-          <th class="table-warning"></th>
-          <th class="table-info"></th>
-          <th class="table-danger"></th>
+        <tr v-for="transaction in transactions">
+          <th v-for="categoryId in [1, 2, 3, 4, 5]" :key="categoryId">
+            <div v-if="categoryId === transaction.category_id" class="card" style="width: 18rem;">
+              <div class="card-body">
+                <h5 class="card-title">{{ transaction.amount }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ transaction.date }}</h6>
+                <button class="btn btn-primary">See More</button>
+              </div>
+            </div>
+          </th>
         </tr>
       </tbody>
     </table>

@@ -10,12 +10,11 @@ def get_db():
         create_users_table()
         create_category_table()
         create_transaction_table()
-        
-
     return db
 
 def query_db(query, args=(), one=False):
     cur = get_db().execute(query, args)
+    cur.row_factory = sqlite3.Row
     rv = cur.fetchall()
     cur.close()
     get_db().commit()
