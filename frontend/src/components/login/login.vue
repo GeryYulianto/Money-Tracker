@@ -1,7 +1,9 @@
+<!-- Tambahkan Error Handling -->
+
 <template>
   <div class="login-container">
     <!-- <form @submit.prevent="login" name="login-form"> -->
-    <form name="login-form" >
+    <form name="login-form">
       <div class="mb-3">
         <label for="username">Username: </label>
         <input
@@ -52,7 +54,7 @@ export default {
   methods: {
     async login() {
       if (!this.input.username || !this.input.password) {
-        this.errorMessage = "Username dan Password tidak boleh kosong";
+        // this.errorMessage = "Username dan Password tidak boleh kosong";
         return;
       }
 
@@ -63,7 +65,7 @@ export default {
         });
 
         if (response.status == 200) {
-          console.log(response);
+          this.$router.push('/main')
         } else {
           console.error("Login error:", response);
         }
@@ -74,21 +76,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.login-container {
-  max-width: 300px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-}
-
-.text-danger {
-  color: red;
-}
-</style>

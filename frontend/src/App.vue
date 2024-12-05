@@ -1,30 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
-
-// Import Eksternal Component
-import Login from './components/login/login.vue'
-import FormTransaction from './components/form transaction/formTransaction.vue'
-
-// Definisi Rute
-const routes = {
-  '/': Login,
-  '/form-transaction': FormTransaction
-}
-
-const currentPath = ref(window.location.pathname)
-
-const currentView = computed(() => {
-  return routes[currentPath.value]
-})
-
-function navigate(path) {
-  window.history.pushState({}, '', path)
-  currentPath.value = path
-}
-
-window.addEventListener('popstate', () => {
-  currentPath.value = window.location.pathname
-})
+import { RouterView } from 'vue-router';
 </script>
 
 <template>
@@ -43,7 +18,7 @@ window.addEventListener('popstate', () => {
     />
   </div>  -->
 
-  <component :is="currentView" />
+  <RouterView />
 </template>
 
 <!-- <script>
@@ -69,10 +44,11 @@ window.addEventListener('popstate', () => {
 </script> -->
 
 <script>
+
 export default {
   name: 'App',
   components: {
-    Login,
+
   }
 }
 </script>
