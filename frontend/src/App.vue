@@ -1,38 +1,78 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-import workspace from './components/workspace/workspace.vue';
+import { ref, computed } from 'vue'
+
+// Import Eksternal Component
+import Login from './components/login/login.vue'
+import FormTransaction from './components/form transaction/formTransaction.vue'
+
+// Definisi Rute
+const routes = {
+  '/': Login,
+  '/form-transaction': FormTransaction
+}
+
+const currentPath = ref(window.location.pathname)
+
+const currentView = computed(() => {
+  return routes[currentPath.value]
+})
+
+function navigate(path) {
+  window.history.pushState({}, '', path)
+  currentPath.value = path
+}
+
+window.addEventListener('popstate', () => {
+  currentPath.value = window.location.pathname
+})
 </script>
 
 <template>
-  <workspace />
+  <!-- <div id="app">
+    <button
+      type="button"
+      class="btn"
+      @click="showModal"
+    >
+      Open Modal!
+    </button>
+
+    <FormTransaction
+      v-show="isModalVisible"
+      @close="closeModal"
+    />
+  </div>  -->
+
+  <component :is="currentView" />
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<!-- <script>
+  export default {
+    name: 'App',
+    components: {
+      FormTransaction,
+    },
+    data() {
+      return {
+        isModalVisible: false,
+      };
+    },
+    methods: {
+      showModal() {
+        this.isModalVisible = true;
+      },
+      closeModal() {
+        this.isModalVisible = false;
+      }
+    }
+  };
+</script> -->
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+<script>
+export default {
+  name: 'App',
+  components: {
+    Login,
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
 }
-</style>
+</script>

@@ -1,42 +1,94 @@
-<script setup>
-// defineProps({
-//   msg: {
-//     type: String,
-//     required: true,
-//   },
-// })
-</script>
-
 <template>
-    <h1 class="text-success text-center"> Login </h1>
-    
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
+  <div class="login-container">
+    <!-- <form @submit.prevent="login" name="login-form"> -->
+    <form name="login-form" >
+      <div class="mb-3">
+        <label for="username">Username: </label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          v-model="input.username"
+          required
+        />
+      </div>
 
-                        <form id="loginForm" action="">
+      <div class="mb-3">
+        <label for="password">Password: </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          v-model="input.password"
+          required
+        />
+      </div>
 
-                            <div class="form-group">
-                                <label for="username"> Username </label>
-                                <input type="username" class="form-control" id="username" placeholder="Username" required />
-                            </div>
+      <button
+        class="btn btn-outline-dark"
+        type="submit"
+        v-on:click.prevent="login()">
+        Login
+      </button>
 
-                            <div class="form-group">
-                                <label for="password"> Password </label>
-                                <input type="password" class="form-control" id="password" placeholder="Password" required />
-                            </div>
-
-                            <br>
-                            <button class="btn btn-primary"> Login </button>
-                        </form>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    </form>
+  </div>
 </template>
 
+<script>
+import axios from "axios";
+
+export default {
+  name: "Login",
+  data() {
+    return {
+      input: {
+        username: "",
+        password: "",
+      },
+    };
+  },
+
+  methods: {
+    async login() {
+      if (!this.input.username || !this.input.password) {
+        this.errorMessage = "Username dan Password tidak boleh kosong";
+        return;
+      }
+
+      try {
+        const response = await axios.post("http://127.0.0.1:8000/login", {
+          username: this.input.username,
+          password: this.input.password,
+        });
+
+        if (response.status == 200) {
+          console.log(response);
+        } else {
+          console.error("Login error:", response);
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.login-container {
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.text-danger {
+  color: red;
+}
+</style>
