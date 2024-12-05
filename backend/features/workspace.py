@@ -32,7 +32,23 @@ class WorkSpaceFeatures(FlaskApp):
 
             return jsonify(transactions_list)
         elif request.method == 'POST':
-            pass
+            try:
+                data = request.json
+                category_id = data.get('category_id')
+                date = data.get('date')
+                amount = data.get('amount')
+                username = session.get('username')
+                description = data.get('description')
+
+                query_db('''
+                    INSERT INTO transactions (category_id, date, amount, username, description)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (category_id, date, amount, username, description))
+
+                return jsonify('Success'), 200
+            except:
+                return jsonify('Failed'), 400
+            
     
     def category(self):
         utilities = request.args.get('utilities')
