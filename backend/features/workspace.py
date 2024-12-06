@@ -81,8 +81,16 @@ class WorkSpaceFeatures(FlaskApp):
         category_list = [dict(row) for row in categories]
 
         return jsonify(category_list)
+
+    def check_session(self):
+        user = session.get('username')
+        if user:
+            return jsonify(session.get('username'))
+        else:
+            return jsonify('No session')
         
 
     def add_workspace_endpoints(self):
         self.add_endpoint('/transactions', 'transactions', self.transactions, ['GET', 'POST'])
         self.add_endpoint('/category', 'category', self.category, ['GET'])
+        self.add_endpoint('/session', 'session', self.check_session, ['GET'])
