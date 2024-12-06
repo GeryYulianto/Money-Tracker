@@ -1,137 +1,131 @@
-<script>
-  export default {
-    name: 'formTransaction',
-    methods: {
-      close() {
-        this.$emit('close');
-      },
-    },
-  };
-</script>
-
 <template>
-  <transition name="modal-fade">
-    <div class="modal-backdrop">
-      <div class="modal"
-        role="dialog"
-        aria-labelledby="modalTitle"
-        aria-describedby="modalDescription"
-      >
-        <header
-          class="modal-header"
-          id="modalTitle"
-        >
-          <slot name="header">
-            This is the default tile!
-          </slot>
-          <button
-            type="button"
-            class="btn-close"
-            @click="close"
-            aria-label="Close modal"
-          >
-            x
-          </button>
-        </header>
+  <div class="modal fade" :id="modalId" tabindex="-1" :aria-labelledby="`${modalId}Label`" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
 
-        <section
-          class="modal-body"
-          id="modalDescription"
-        >
-          <slot name="body">
-            This is the default body!
-          </slot>
-        </section>
+        <!-- header untuk modal berdasarkan id dan category name nya -->
+        <div class="modal-header">
+          <h5 class="modal-title" :id="`${modalId}Label`">Add New {{ category.name }} Transaction</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        <div class="modal-body">
+          <form @submit.prevent="submitTransaction">
+            <div class="mb-3">
+              <label for="date" class="form-label">Date</label>
+              <Datepicker 
+                v-model="formData.date"
+                :format="formatDate" 
+                :auto-apply="true"
+                input-class-name="form-control"
+              />
+            </div>
 
-        <footer class="modal-footer">
-          <slot name="footer">
-            This is the default footer!
-          </slot>
-          <button
-            type="button"
-            class="btn-green"
-            @click="close"
-            aria-label="Close modal"
-          >
-            Close me!
-          </button>
-        </footer>
+            <div class="mb-3">
+              <label for="amount" class="form-label">Amount</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                class="form-control" 
+                id="amount" 
+                v-model.number="formData.amount"
+                required
+              >
+            </div>
+
+            <div class="mb-3">
+              <label for="desc" class="form-label">Description</label>
+              <textarea 
+                class="form-control" 
+                id="desc" 
+                v-model="formData.description"
+                required
+              ></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                {{ isSubmitting ? 'Saving...' : 'Save Transaction' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </transition>
+  </div>
 </template>
 
-<style>
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+<script setup>
+import { ref, reactive } from 'vue'
+import Datepicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import axios from 'axios'
 
-  .modal {
-    background: #FFFFFF;
-    box-shadow: 2px 2px 20px 1px;
-    overflow-x: auto;
-    display: flex;
-    flex-direction: column;
+const props = defineProps({
+  category: {
+    type: Object,
+    required: true
+  },
+  modalId: {
+    type: String,
+    required: true
   }
+})
 
-  .modal-header,
-  .modal-footer {
-    padding: 15px;
-    display: flex;
-  }
+const emit = defineEmits(['transaction-added', 'transaction-error'])
 
-  .modal-header {
-    position: relative;
-    border-bottom: 1px solid #eeeeee;
-    color: #4AAE9B;
-    justify-content: space-between;
-  }
+const formatDate = (date) => {
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear()
+  return `${month}/${day}/${year}`
+}
 
-  .modal-footer {
-    border-top: 1px solid #eeeeee;
-    flex-direction: column;
-  }
+const formData = reactive({
+  category_id: props.category.id,
+  date: new Date(),
+  amount: null,
+  description: ''
+})
 
-  .modal-body {
-    position: relative;
-    padding: 20px 10px;
-  }
+const isSubmitting = ref(false)
 
-  .btn-close {
-    position: absolute;
-    top: 0;
-    right: 0;
-    border: none;
-    font-size: 20px;
-    padding: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #4AAE9B;
-    background: transparent;
-  }
+const submitTransaction = async () => {
+  isSubmitting.value = true
 
-  .btn-green {
-    color: white;
-    background: #4AAE9B;
-    border: 1px solid #4AAE9B;
-    border-radius: 2px;
-  }
+  console.log('Sending transaction:', {
+    category_id: formData.category_id,
+    date: formatDate(formData.date),
+    amount: formData.amount,
+    description: formData.description
+  });
 
-  .modal-fade-enter,
-  .modal-fade-leave-to {
-    opacity: 0;
-  }
+  try {
+    const response = await axios.post('http://127.0.0.1:8000/transactions', {
+      category_id: formData.category_id,
+      date: formatDate(formData.date),
+      amount: formData.amount,
+      description: formData.description
+    })
 
-  .modal-fade-enter-active,
-  .modal-fade-leave-active {
-    transition: opacity .5s ease;
+    // Emit success event
+    emit('transaction-added', response.data)
+
+    // Reset form
+    formData.amount = null
+    formData.date = new Date()
+    formData.description = ''
+
+    // Close modal (using Bootstrap's modal method)
+    const modalElement = document.getElementById(props.modalId)
+    const modalInstance = bootstrap.Modal.getInstance(modalElement)
+    modalInstance.hide()
+  } catch (error) {
+    console.error('Full error details:', error.response);
+    emit('transaction-error', error)
+  } finally {
+    isSubmitting.value = false
   }
-</style>
+}
+</script>
