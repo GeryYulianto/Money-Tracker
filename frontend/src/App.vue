@@ -1,38 +1,54 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-import workspace from './components/workspace/workspace.vue';
+import { RouterView } from 'vue-router';
 </script>
 
 <template>
-  <workspace />
+  <!-- <div id="app">
+    <button
+      type="button"
+      class="btn"
+      @click="showModal"
+    >
+      Open Modal!
+    </button>
+
+    <FormTransaction
+      v-show="isModalVisible"
+      @close="closeModal"
+    />
+  </div>  -->
+
+  <RouterView />
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
+<!-- <script>
+  export default {
+    name: 'App',
+    components: {
+      FormTransaction,
+    },
+    data() {
+      return {
+        isModalVisible: false,
+      };
+    },
+    methods: {
+      showModal() {
+        this.isModalVisible = true;
+      },
+      closeModal() {
+        this.isModalVisible = false;
+      }
+    }
+  };
+</script> -->
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+<script>
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+export default {
+  name: 'App',
+  components: {
+
   }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
 }
-</style>
+</script>
