@@ -19,6 +19,9 @@ class LoginFeatures(FlaskApp):
                 return jsonify('Success'), 200
             else:
                 return jsonify('Wrong'), 404
-
+    def logout(self):
+        session.pop('username', None)
+        return jsonify('Logged out'), 200
     def add_endpoint_login(self):
         self.add_endpoint('/login', 'login', self.login, ['GET', 'POST'])
+        self.add_endpoint('/logout', 'logout', self.logout, ['GET'])
