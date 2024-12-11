@@ -8,7 +8,7 @@ class WorkSpaceFeatures:
         self.app = app
 
     def add_workspace_endpoints(self):
-        @self.app.route('/transactions', methods=['GET', 'POST', 'DELETE'])
+        @self.app.route('/transactions', methods=['GET', 'POST', 'DELETE', 'PUT'])
         @jwt_required()
         def transactions():
             if request.method == 'GET':
@@ -55,12 +55,53 @@ class WorkSpaceFeatures:
             elif request.method == 'DELETE':
                 try:
                     data = request.json
+                    username = get_jwt_identity()
                     transaction_id = data.get('transaction_id')
 
-                    query_db('DELETE FROM transactions where transaction_id = ?', (transaction_id,))
+                    query_db('DELETE FROM transactions WHERE transaction_id = ? AND username = ?', (transaction_id, username))
                     return jsonify('Delete Success'), 200
                 except:
                     return jsonify('Failed'), 400
+            elif request.method == 'PUT':
+                try:
+                    data = request.json
+                    transaction_id = data.get('transaction_id')
+                    category_id = data.get('category_id')
+                    date = data.get('date')
+                    amount = data.get('amount')
+                    username = get_jwt_identity()
+                    description = data.get('description')
+
+                    query = ('''UPDATE transactions SET''')
+                    params = []
+
+                    if category_id:
+                        query += ' category_id = ?,'
+                        params.append(category_id)
+                    
+                    if date:
+                        query += ' date = ?,'
+                        params.append(date)
+                    
+                    if amount:
+                        query += ' amount = ?,'
+                        params.append(amount)
+                    
+                    if description:
+                        query += ' description = ?'
+                        params.append(description)
+                    else:
+                        query = query[:-1]
+                    
+                    query_db(query + ' WHERE transaction_id = ?', params + [transaction_id])
+
+                    return jsonify('Update Success'), 200
+                except Exception as e:
+                    return jsonify(f'Failed Update, {e}'), 404
+
+
+
+
         
         @self.app.route('/category', methods=['GET'])
         @jwt_required()
