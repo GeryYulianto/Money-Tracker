@@ -3,6 +3,7 @@ import { ref } from "vue"; // ref untuk var reaktif
 import Datepicker from "@vuepic/vue-datepicker";
 import formTransaction from "../form_transaction/formTransaction.vue";
 import transactionCard from "../transaction_card/transactionCard.vue";
+import editTransaction from "../transaction_card/editTransaction.vue";
 import "@vuepic/vue-datepicker/dist/main.css";
 
 // variabel reaktif
@@ -29,6 +30,7 @@ export default {
     Datepicker,
     formTransaction,
     transactionCard,
+    editTransaction,
   },
 
   // array transaction akan menyimpan daftar transaksi
@@ -39,66 +41,102 @@ export default {
   },
 
   methods: {
-    // logout
     async logout() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/logout");
-        console.log(response.data);
+        const token = localStorage.getItem('jwt_token');
+        const response = await axios.get('http://127.0.0.1:8000/logout', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
-        // redirect ke login
-        if (response.status == 200) {
+        if (response.status === 200) {
+          localStorage.removeItem('jwt_token');
           this.$router.push("/");
-        } else {
-          console.error("Login error:", response);
         }
       } catch (error) {
-        console.error("Login error:", error);
+        console.error("Logout error:", error);
       }
     },
 
     // axios get /transactions
-    fetchTransactions() {
-      const path = "http://127.0.0.1:8000/transactions";
-      axios.get(path)
-        .then((res) => {
-          this.transactions = res.data;
-          console.log(res.data);
-        })
-        .catch((err) => {
-          console.error(err);
+    async fetchTransactions() {
+      try {
+        const token = localStorage.getItem('jwt_token');
+        const response = await axios.get("http://127.0.0.1:8000/transactions", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
+        this.transactions = response.data;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('jwt_token');
+          this.$router.push("/");
+        }
+        console.error("Fetch error:", error);
+      }
     },
 
-    // add new transaction
+    // Update handleAddEvent to refresh transactions
     handleAddEvent(eventData) {
-      console.log("Adding event:", eventData);
+      // Refresh transactions after adding a new one
+      this.fetchTransactions();
       const modal = bootstrap.Modal.getInstance(
         document.getElementById(`formTransaction${eventData.category_id}`)
       );
-      modal.hide();
+      if (modal) {
+        modal.hide();
+      }
+    },
+
+    // Update event to handle transaction update
+    handleUpdateEvent(updatedTransaction) {
+      this.fetchTransactions();
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById(`editTransaction${updatedTransaction.id}`)
+      );
+      if (modal) {
+        modal.hide();
+      }
     },
 
     // edit transaction
     handleEditEvent(eventData) {
-      console.log("Updating event:", eventData);
+      // Refresh transactions after editing
+      this.fetchTransactions();
       const modal = bootstrap.Modal.getInstance(
-        document.getElementById("transactionCard")
+        document.getElementById(`transactionCard${eventData.transaction_id}`)
       );
-      modal.hide();
+      if (modal) {
+        modal.hide();
+      }
     },
 
-    // open modal edit (?)
+    // Add method to handle transaction deletion
+    handleDeleteEvent() {
+      this.fetchTransactions();
+    },
+
+    // Update to open edit modal
     openEditModal(transaction) {
-      this.selectedEvent = transaction;
-      const modal = new bootstrap.Modal(
-        document.getElementById("transactionCard")
-      );
-      modal.show();
+      // Ensure transaction is not null before setting
+      if (transaction) {
+        this.selectedEvent = { ...transaction };
+        const modal = new bootstrap.Modal(
+          document.getElementById(`editTransaction${transaction.id}`)
+        );
+        modal.show();
+      }
     },
-
   },
+
   // saat komponent dibuat, panggil fetchTransactions
   created() {
+    if (!localStorage.getItem('jwt_token')) {
+      this.$router.push("/");
+      return;
+    }
     this.fetchTransactions();
   },
 };
@@ -116,8 +154,21 @@ export default {
     @submit-event="handleAddEvent" 
   />
 
-  <!-- modal card untuk edit -->
-  <transactionCard :event-data="selectedEvent" @update-event="handleEditEvent" />
+  <!-- modal card untuk see more -->
+  <transactionCard 
+    v-for="transaction in transactions"
+    :key="transaction.id"
+    :event-data="transaction" 
+    :modal-id="`transactionCard${transaction.id}`"
+    @edit-transaction="openEditModal"
+    @delete-transaction="handleDeleteEvent"
+  />
+
+  <!-- modal edit transaction -->
+  <editTransaction
+    :transaction-data="selectedEvent"
+    @update-transaction="handleUpdateEvent"
+  />
 
   <!-- Filter -->
   <div class="filter d-flex m-3">

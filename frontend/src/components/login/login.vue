@@ -1,5 +1,3 @@
-<!-- Tambahkan Error Handling -->
-
 <template>
   <div class="login-container">
     <!-- <form @submit.prevent="login" name="login-form"> -->
@@ -28,6 +26,10 @@
         />
       </div>
 
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
       <!-- v.on:clik akan mengaktifkan method login() -->
       <button
         class="btn btn-outline-dark"
@@ -52,16 +54,18 @@ export default {
         username: "",
         password: "",
       },
+      errorMessage: ""
     };
   },
   
   // method login() akan mengirimkan data username dan password ke backend
   methods: {
     async login() {
+      this.errorMessage = "";
 
       // validasi input sederhana
       if (!this.input.username || !this.input.password) {
-        // this.errorMessage = "Username dan Password tidak boleh kosong";
+        this.errorMessage = "Username dan Password tidak boleh kosong";
         return;
       }
 
@@ -73,12 +77,14 @@ export default {
         });
         
         // redirect ke main kalau status 200
-        if (response.status == 200) {
-          this.$router.push('/main')
+        if (response.status === 200 && response.data.access_token) {
+          localStorage.setItem('jwt_token', response.data.access_token);
+          this.$router.push('/main');
         } else {
-          console.error("Login error:", response);
+          this.errorMessage = "Login gagal: Response tidak valid";
         }
       } catch (error) {
+        this.errorMessage = error.response?.data?.message || "Login gagal: Terjadi kesalahan";
         console.error("Login error:", error);
       }
     },
