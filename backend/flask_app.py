@@ -3,7 +3,7 @@ from flask_session import Session
 from database.database import query_db
 from dotenv import load_dotenv
 import os
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import JWTManager
 
 load_dotenv()
 class FlaskApp():

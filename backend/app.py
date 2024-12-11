@@ -3,7 +3,7 @@ from flask_app import FlaskApp
 from features.login import LoginFeatures
 from features.workspace import WorkSpaceFeatures
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
 

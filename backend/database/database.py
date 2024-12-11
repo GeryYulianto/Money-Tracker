@@ -20,6 +20,13 @@ def query_db(query, args=(), one=False):
     get_db().commit()
     return (rv[0] if rv else None) if one else rv
 
+def insert_db(query, args=()):
+    cur = get_db().execute(query, args)
+    get_db().commit()
+    last_id = cur.lastrowid
+    cur.close()
+    return last_id
+
 
 #Migrations
 def create_users_table():

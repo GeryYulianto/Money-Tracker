@@ -1,6 +1,6 @@
 from flask import *
-from database.database import query_db
-from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+from database.database import query_db, insert_db
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions.jwt import JWT
 
 class WorkSpaceFeatures:
@@ -8,7 +8,7 @@ class WorkSpaceFeatures:
         self.app = app
 
     def add_workspace_endpoints(self):
-        @self.app.route('/transactions', methods=['GET', 'POST'])
+        @self.app.route('/transactions', methods=['GET', 'POST', 'DELETE'])
         @jwt_required()
         def transactions():
             if request.method == 'GET':
@@ -44,12 +44,21 @@ class WorkSpaceFeatures:
                     username = get_jwt_identity()
                     description = data.get('description')
 
-                    query_db('''
+                    transaction_id = insert_db('''
                         INSERT INTO transactions (category_id, date, amount, username, description)
                         VALUES (?, ?, ?, ?, ?)
                     ''', (category_id, date, amount, username, description))
 
-                    return jsonify('Success'), 200
+                    return jsonify({"Message": "Success", "transaction_id": transaction_id}), 200
+                except:
+                    return jsonify('Failed'), 400
+            elif request.method == 'DELETE':
+                try:
+                    data = request.json
+                    transaction_id = data.get('transaction_id')
+
+                    query_db('DELETE FROM transactions where transaction_id = ?', (transaction_id,))
+                    return jsonify('Delete Success'), 200
                 except:
                     return jsonify('Failed'), 400
         
