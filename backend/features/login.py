@@ -1,27 +1,31 @@
-from flask_app import FlaskApp
 from flask import *
+from flask_jwt_extended import jwt_required, create_access_token, get_jwt_identity
+import jsonpickle
 from database.database import query_db
 
-class LoginFeatures(FlaskApp):
+class LoginFeatures:
     def __init__(self, app):
-        super().__init__(app)
-    def login(self):
-        if request.method == 'POST':
-            data = request.json
-            username = data.get('username')
-            password = data.get('password')
-            user = query_db('''
-                SELECT * FROM user
-                WHERE username = ? AND password = ?
-            ''', (username, password))
-            if user:
-                session['username'] = username
-                return jsonify('Success'), 200
-            else:
-                return jsonify('Wrong'), 404
-    def logout(self):
-        session.pop('username', None)
-        return jsonify('Logged out'), 200
-    def add_endpoint_login(self):
-        self.add_endpoint('/login', 'login', self.login, ['GET', 'POST'])
-        self.add_endpoint('/logout', 'logout', self.logout, ['GET'])
+        self.app = app
+
+    def add_endpoints(self):
+        @self.app.route('/login', methods=['GET', 'POST'])
+        def login():
+            if request.method == 'POST':
+                data = request.json
+                username = data.get('username')
+                password = data.get('password')
+                user = query_db('''
+                    SELECT * FROM user
+                    WHERE username = ? AND password = ?
+                ''', (username, password))
+                if user:
+                    access_token = create_access_token(identity=username)
+                    return jsonify(access_token=access_token), 200
+                else:
+                    return jsonify('Wrong'), 404
+
+        @self.app.route('/logout', methods=['GET'])
+        @jwt_required()
+        def logout():
+            user = get_jwt_identity()
+            return jsonpickle.encode(f'Logged out {user}'), 200
