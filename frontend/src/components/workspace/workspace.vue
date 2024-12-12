@@ -82,6 +82,7 @@ export default {
           }
         });
         this.transactions = response.data;
+        console.log("Transactions:", this.transactions);
       } catch (error) {
         if (error.response?.status === 401) {
           localStorage.removeItem('jwt_token');
@@ -104,10 +105,10 @@ export default {
     },
 
     // Update event to handle transaction update
-    handleUpdateEvent(updatedTransaction) {
+    handleUpdateEvent(eventData) {
       this.fetchTransactions();
       const modal = bootstrap.Modal.getInstance(
-        document.getElementById(`editTransaction${updatedTransaction.id}`)
+        document.getElementById(`editTransaction${eventData.transaction_id}`)
       );
       if (modal) {
         modal.hide();

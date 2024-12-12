@@ -1,44 +1,49 @@
 <template>
-  <div class="login-container">
-    <!-- <form @submit.prevent="login" name="login-form"> -->
-    <form name="login-form">
-      <div class="mb-3">
-        <!-- username dan password disimpan di input -->
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow-sm" style="width: 350px;">
+      <div class="card-body p-4">
+        <h2 class="card-title text-center mb-4">Login</h2>
+        <form name="login-form">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control"
+              v-model="input.username"
+              required
+              placeholder="Enter your username"
+            />
+          </div>
 
-        <label for="username">Username: </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          v-model="input.username"
-          required
-        />
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              v-model="input.password"
+              required
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <div v-if="errorMessage" class="alert alert-danger mb-3">
+            {{ errorMessage }}
+          </div>
+
+          <button
+            class="btn btn-primary w-100"
+            type="submit"
+            v-on:click.prevent="login()"
+          >
+            Login
+          </button>
+        </form>
       </div>
-
-      <div class="mb-3">
-        <label for="password">Password: </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          v-model="input.password"
-          required
-        />
-      </div>
-
-      <div v-if="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
-
-      <!-- v.on:clik akan mengaktifkan method login() -->
-      <button
-        class="btn btn-outline-dark"
-        type="submit"
-        v-on:click.prevent="login()">
-        Login
-      </button>
-
-    </form>
+    </div>
   </div>
 </template>
 
