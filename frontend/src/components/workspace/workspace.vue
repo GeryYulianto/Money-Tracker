@@ -145,10 +145,7 @@ export default {
     openEditModal(transaction) {
       // Ensure transaction is not null before setting
       if (transaction) {
-        this.selectedEvent = { ...transaction };
-        const modal = new bootstrap.Modal(
-          document.getElementById(`editTransaction${transaction.id}`)
-        );
+        const modal = new bootstrap.Modal(document.getElementById(`editTransaction${transaction.id}`));
         modal.show();
       }
     },
@@ -189,7 +186,10 @@ export default {
 
   <!-- modal edit transaction -->
   <editTransaction
-    :transaction-data="selectedEvent"
+    v-for="transaction in transactions"
+    :key="transaction.id"
+    :transaction-data="transaction"
+    :modal-id="`editTransaction${transaction.id}`"
     @update-transaction="handleUpdateEvent"
   />
 
@@ -259,7 +259,12 @@ export default {
               <h6 class="card-subtitle mb-2 text-muted">
                 {{ transaction.date }}
               </h6>
-              <button class="btn btn-primary" @click="openEditModal(transaction)">See More</button>
+              <button 
+                class="btn btn-primary" 
+                data-bs-toggle="modal" 
+                :data-bs-target="`#transactionCard${transaction.id}`">
+                See More
+              </button>
             </div>
           </div>
         </th>
