@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue"; // ref untuk var reaktif 
+import { ref, onMounted } from "vue"; // ref untuk var reaktif 
 import Datepicker from "@vuepic/vue-datepicker";
 import formTransaction from "../form_transaction/formTransaction.vue";
 import transactionCard from "../transaction_card/transactionCard.vue";
@@ -7,8 +7,6 @@ import editTransaction from "../transaction_card/editTransaction.vue";
 import "@vuepic/vue-datepicker/dist/main.css";
 
 // variabel reaktif
-// const startDate = ref(null);
-// const endDate = ref(null);
 const selectedEvent = ref(null); // menyimpan transaksi yang dipilih
 
 // array kategori
@@ -39,7 +37,8 @@ export default {
       transactions: [],
       selectedCategories: [],
       startDate : null,
-      endDate: null
+      endDate: null,
+      filteredCategories: []
     };
   },
 
@@ -133,13 +132,37 @@ export default {
     },
 
     //Buat filter
-    handleFilterEvent() {
-      const args = {
-        start_date: this.formatDate(this.startDate),
-        end_date: this.formatDate(this.endDate)
-        // categories: this.selectedCategories.join(',')
-      };
-      this.fetchTransactions(args);
+    async handleFilterEvent() {
+      try {
+        const categories = [
+          { id: 1, name: 'Utilities', class: 'table-primary' },
+          { id: 2, name: 'Education', class: 'table-success' },
+          { id: 3, name: 'Entertainment', class: 'table-warning' },
+          { id: 4, name: 'Food', class: 'table-info' },
+          { id: 5, name: 'Health', class: 'table-danger' }
+        ];
+        const token = localStorage.getItem('jwt_token');
+        const selectedCategories = this.selectedCategories.reduce((acc, category) => {
+          acc[category.toLowerCase()] = true;
+          return acc;
+        }, {});
+        const categoryQueryString = new URLSearchParams(selectedCategories).toString();
+        const categoryResponse = await axios.get(`http://127.0.0.1:8000/category?${categoryQueryString}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const filteredCategoryIds = categoryResponse.data.map(category => category.category_id);
+        this.filteredCategories.value = categories.filter(category => filteredCategoryIds.includes(category.id));
+
+        const args = {
+          start_date: this.formatDate(this.startDate),
+          end_date: this.formatDate(this.endDate)
+        };
+        this.fetchTransactions(args);
+      } catch (error) {
+        console.error("Filter error:", error);
+      }
     },
 
     // Update to open edit modal
@@ -196,59 +219,65 @@ export default {
 
   <!-- Filter -->
   <div class="filter d-flex m-3">
-      <div class="filter-date d-flex gap-2 me-2">
-        <div class="start-date">
-          <Datepicker v-model="startDate"/>
-        </div>
-        <div class="end-date">
-          <Datepicker v-model="endDate"/>
-        </div>
+    <div class="filter-date d-flex gap-2 me-2">
+      <div class="start-date">
+        <Datepicker v-model="startDate" />
       </div>
-      <div class="category-filter d-flex gap-2 me-2">
-        <div class="form-check w-100 mw-100" v-for="category in categories" :key="category">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            :value="category"
-            v-model="selectedCategories"
-          />
-          <label class="form-check-label">
-            {{ category.name }}
-          </label>
-        </div>
+      <div class="end-date">
+        <Datepicker v-model="endDate" />
       </div>
-
-      <button
-        class="btn btn-success"
-        type="button"
-        v-on:click="handleFilterEvent">
-        Filter
-      </button>
     </div>
+    <div class="category-filter d-flex gap-2 me-2">
+      <div class="form-check w-100 mw-100" v-for="category in categories" :key="category.id">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          :value="category.name"
+          v-model="selectedCategories"
+        />
+        <label class="form-check-label">
+          {{ category.name }}
+        </label>
+      </div>
+    </div>
+
     <button
-        class="btn btn-outline-dark"
-        type="button"
-        v-on:click="logout()">
-        Logout
-      </button>
+      class="btn btn-success"
+      type="button"
+      @click="handleFilterEvent">
+      Filter
+    </button>
+  </div>
+  <button
+    class="btn btn-outline-dark"
+    type="button"
+    @click="logout()">
+    Logout
+  </button>
 
   <!-- menampilkan transaksi -->
   <table class="table m-5">
     <thead>
       <tr>
-        <th v-for="category in categories" :key="category.id" :class="category.class">
+        <th 
+          v-for="category in (this.filteredCategories.length > 0 ? this.filteredCategories : categories)" 
+          :key="category.id" 
+          :class="category.class"
+        >
           {{ category.name }}
           <button 
             type="button" 
             class="btn btn-dark"
             data-bs-toggle="modal" 
             :data-bs-target="`#formTransaction${category.id}`"
-          >+</button>
+          >
+            +
+          </button>
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="transaction in transactions">
+      <tr v-for="transaction in transactions" :key="transaction.id">
         <th v-for="categoryId in [1, 2, 3, 4, 5]" :key="categoryId">
           <div
             v-if="categoryId === transaction.category_id"
