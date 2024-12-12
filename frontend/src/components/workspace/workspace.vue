@@ -7,8 +7,8 @@ import editTransaction from "../transaction_card/editTransaction.vue";
 import "@vuepic/vue-datepicker/dist/main.css";
 
 // variabel reaktif
-const startDate = ref();
-const endDate = ref();
+// const startDate = ref(null);
+// const endDate = ref(null);
 const selectedEvent = ref(null); // menyimpan transaksi yang dipilih
 
 // array kategori
@@ -37,10 +37,22 @@ export default {
   data() {
     return {
       transactions: [],
+      selectedCategories: [],
+      startDate : null,
+      endDate: null
     };
   },
 
   methods: {
+    formatDate(date) {
+      if (!date) return null;
+      const d = new Date(date);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${month}/${day}/${year}`;
+    },
+
     async logout() {
       try {
         const token = localStorage.getItem('jwt_token');
@@ -60,10 +72,11 @@ export default {
     },
 
     // axios get /transactions
-    async fetchTransactions() {
+    async fetchTransactions(args=null) {
       try {
         const token = localStorage.getItem('jwt_token');
-        const response = await axios.get("http://127.0.0.1:8000/transactions", {
+        const queryString = args ? new URLSearchParams(args).toString() : '';
+        const response = await axios.get(`http://127.0.0.1:8000/transactions?${queryString}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -117,6 +130,16 @@ export default {
     // Add method to handle transaction deletion
     handleDeleteEvent() {
       this.fetchTransactions();
+    },
+
+    //Buat filter
+    handleFilterEvent() {
+      const args = {
+        start_date: this.formatDate(this.startDate),
+        end_date: this.formatDate(this.endDate)
+        // categories: this.selectedCategories.join(',')
+      };
+      this.fetchTransactions(args);
     },
 
     // Update to open edit modal
@@ -173,80 +196,41 @@ export default {
 
   <!-- Filter -->
   <div class="filter d-flex m-3">
-    <div class="filter-date d-flex gap-2 me-2">
-      <div class="start-date">
-        <Datepicker v-model="startDate" />
+      <div class="filter-date d-flex gap-2 me-2">
+        <div class="start-date">
+          <Datepicker v-model="startDate"/>
+        </div>
+        <div class="end-date">
+          <Datepicker v-model="endDate"/>
+        </div>
       </div>
-      <div class="end-date">
-        <Datepicker v-model="endDate" />
+      <div class="category-filter d-flex gap-2 me-2">
+        <div class="form-check w-100 mw-100" v-for="category in categories" :key="category">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            :value="category"
+            v-model="selectedCategories"
+          />
+          <label class="form-check-label">
+            {{ category.name }}
+          </label>
+        </div>
       </div>
+
+      <button
+        class="btn btn-success"
+        type="button"
+        v-on:click="handleFilterEvent">
+        Filter
+      </button>
     </div>
-    <div class="category-filter d-flex gap-2 me-2">
-      <div class="form-check w-100 mw-100">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value="utilities"
-          id="flexCheckChecked"
-          checked
-        />
-        <label class="form-check-label" for="flexCheckChecked">
-          Utilities
-        </label>
-      </div>
-      <div class="form-check w-100 mw-100">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value="education"
-          id="flexCheckChecked"
-          checked
-        />
-        <label class="form-check-label" for="flexCheckChecked">
-          Education
-        </label>
-      </div>
-      <div class="form-check w-100 mw-100">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value="entertainment"
-          id="flexCheckChecked"
-          checked
-        />
-        <label class="form-check-label" for="flexCheckChecked">
-          Entertainment
-        </label>
-      </div>
-      <div class="form-check w-100 mw-100">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value="food"
-          id="flexCheckChecked"
-          checked
-        />
-        <label class="form-check-label" for="flexCheckChecked"> Food </label>
-      </div>
-      <div class="form-check w-100 mw-100">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          value="health"
-          id="flexCheckChecked"
-          checked
-        />
-        <label class="form-check-label" for="flexCheckChecked"> health </label>
-      </div>
-    </div>
-    <button type="submit" class="btn btn-success">Filter</button>
     <button
         class="btn btn-outline-dark"
         type="button"
         v-on:click="logout()">
         Logout
       </button>
-  </div>
 
   <!-- menampilkan transaksi -->
   <table class="table m-5">
