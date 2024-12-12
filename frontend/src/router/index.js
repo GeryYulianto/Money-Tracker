@@ -17,15 +17,11 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: "/more",
+    path: "/card",
     component: () => import('../components/transaction_card/transactionCard.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: "/card",
-    component: () => import('../components/transaction_card/test2.vue'),
-    meta: { requiresAuth: true }
-  },
+
 ]
 
 const router = createRouter({
