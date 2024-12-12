@@ -57,6 +57,7 @@ class WorkSpaceFeatures:
                     data = request.json
                     username = get_jwt_identity()
                     transaction_id = data.get('transaction_id')
+                    print(transaction_id)
 
                     query_db('DELETE FROM transactions WHERE transaction_id = ? AND username = ?', (transaction_id, username))
                     return jsonify('Delete Success'), 200

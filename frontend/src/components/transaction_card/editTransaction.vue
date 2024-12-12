@@ -109,10 +109,20 @@ export default {
     },
   },
   methods: {
+    formatDateForBackend(date) {
+      if (!date) return null;
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
     async submitForm() {
       try {
         const token = localStorage.getItem('jwt_token');
-        const response = await axios.put(`http://127.0.0.1:8000/transactions/${this.formData.id}`, this.formData, {
+        const formattedDate = this.formatDateForBackend(this.formData.date);
+        const formData = { ...this.formData, date: formattedDate };
+        const response = await axios.put(`http://127.0.0.1:8000/transactions`, formData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

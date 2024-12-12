@@ -64,9 +64,12 @@ export default {
     async deleteTransaction() {
       try {
         const token = localStorage.getItem('jwt_token');
-        await axios.delete(`http://127.0.0.1:8000/transactions/${this.eventData.id}`, {
+        await axios.delete(`http://127.0.0.1:8000/transactions`, {
           headers: {
             'Authorization': `Bearer ${token}`
+          },
+          data: {
+            "transaction_id": this.eventData.transaction_id
           }
         });
         this.$emit('delete-transaction');
