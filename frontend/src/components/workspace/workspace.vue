@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue"; // ref untuk var reaktif 
+import { ref, onMounted } from "vue"; // ref untuk var reaktif
 import Datepicker from "@vuepic/vue-datepicker";
 import formTransaction from "../form_transaction/formTransaction.vue";
 import transactionCard from "../transaction_card/transactionCard.vue";
@@ -11,11 +11,11 @@ const selectedEvent = ref(null); // menyimpan transaksi yang dipilih
 
 // array kategori
 const categories = [
-  { id: 1, name: 'Utilities', class: 'table-primary' },
-  { id: 2, name: 'Education', class: 'table-success' },
-  { id: 3, name: 'Entertainment', class: 'table-warning' },
-  { id: 4, name: 'Food', class: 'table-info' },
-  { id: 5, name: 'Health', class: 'table-danger' }
+  { id: 1, name: "Utilities", class: "table-primary" },
+  { id: 2, name: "Education", class: "table-success" },
+  { id: 3, name: "Entertainment", class: "table-warning" },
+  { id: 4, name: "Food", class: "table-info" },
+  { id: 5, name: "Health", class: "table-danger" },
 ];
 </script>
 
@@ -36,15 +36,15 @@ export default {
     return {
       transactions: [],
       selectedCategories: [],
-      startDate : null,
+      startDate: null,
       endDate: null,
       filteredCategories: [
-          { id: 1, name: 'Utilities', class: 'table-primary' },
-          { id: 2, name: 'Education', class: 'table-success' },
-          { id: 3, name: 'Entertainment', class: 'table-warning' },
-          { id: 4, name: 'Food', class: 'table-info' },
-          { id: 5, name: 'Health', class: 'table-danger' }
-        ]
+        { id: 1, name: "Utilities", class: "table-primary" },
+        { id: 2, name: "Education", class: "table-success" },
+        { id: 3, name: "Entertainment", class: "table-warning" },
+        { id: 4, name: "Food", class: "table-info" },
+        { id: 5, name: "Health", class: "table-danger" },
+      ],
     };
   },
   computed: {
@@ -52,33 +52,35 @@ export default {
      * Filtered transactions that belong to the currently selected filtered categories
      */
     filteredTransactions() {
-      return this.transactions.filter(transaction => 
-        this.filteredCategories.some(category => category.id === transaction.category_id)
+      return this.transactions.filter((transaction) =>
+        this.filteredCategories.some(
+          (category) => category.id === transaction.category_id
+        )
       );
-    }
+    },
   },
 
   methods: {
     formatDate(date) {
       if (!date) return null;
       const d = new Date(date);
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
       const year = d.getFullYear();
       return `${month}/${day}/${year}`;
     },
 
     async logout() {
       try {
-        const token = localStorage.getItem('jwt_token');
-        const response = await axios.get('http://127.0.0.1:8000/logout', {
+        const token = localStorage.getItem("jwt_token");
+        const response = await axios.get("http://127.0.0.1:8000/logout", {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (response.status === 200) {
-          localStorage.removeItem('jwt_token');
+          localStorage.removeItem("jwt_token");
           this.$router.push("/");
         }
       } catch (error) {
@@ -87,20 +89,23 @@ export default {
     },
 
     // axios get /transactions
-    async fetchTransactions(args=null) {
+    async fetchTransactions(args = null) {
       try {
-        const token = localStorage.getItem('jwt_token');
-        const queryString = args ? new URLSearchParams(args).toString() : '';
-        const response = await axios.get(`http://127.0.0.1:8000/transactions?${queryString}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const token = localStorage.getItem("jwt_token");
+        const queryString = args ? new URLSearchParams(args).toString() : "";
+        const response = await axios.get(
+          `http://127.0.0.1:8000/transactions?${queryString}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
         this.transactions = response.data;
         console.log("Transactions:", this.transactions);
       } catch (error) {
         if (error.response?.status === 401) {
-          localStorage.removeItem('jwt_token');
+          localStorage.removeItem("jwt_token");
           this.$router.push("/");
         }
         console.error("Fetch error:", error);
@@ -150,24 +155,29 @@ export default {
     //Buat filter
     async handleFilterEvent() {
       try {
-        const token = localStorage.getItem('jwt_token');
-        let categoriesFiltered = {}
+        const token = localStorage.getItem("jwt_token");
+        let categoriesFiltered = {};
         Object.values(this.selectedCategories).forEach(function (val, index) {
-          categoriesFiltered[val] = true
-        })
-        const categoryQueryString = new URLSearchParams(categoriesFiltered).toString();
-        const categoryResponse = await axios.get(`http://127.0.0.1:8000/category?${categoryQueryString}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          categoriesFiltered[val] = true;
         });
+        const categoryQueryString = new URLSearchParams(
+          categoriesFiltered
+        ).toString();
+        const categoryResponse = await axios.get(
+          `http://127.0.0.1:8000/category?${categoryQueryString}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        this.filteredCategories= categoryResponse['data']
-        console.log(this.filteredCategories)
+        this.filteredCategories = categoryResponse["data"];
+        console.log(this.filteredCategories);
 
         const args = {
           start_date: this.formatDate(this.startDate),
-          end_date: this.formatDate(this.endDate)
+          end_date: this.formatDate(this.endDate),
         };
         this.fetchTransactions(args);
       } catch (error) {
@@ -179,24 +189,27 @@ export default {
     openEditModal(transaction) {
       // Ensure transaction is not null before setting
       if (transaction) {
-        const modal = new bootstrap.Modal(document.getElementById(`editTransaction${transaction.id}`));
+        const modal = new bootstrap.Modal(
+          document.getElementById(`editTransaction${transaction.id}`)
+        );
         modal.show();
       }
     },
-  getTotalSpentForCategory(categoryId) {
+    getTotalSpentForCategory(categoryId) {
       return this.transactions
-        .filter(transaction => transaction.category_id === categoryId)
+        .filter((transaction) => transaction.category_id === categoryId)
         .reduce((total, transaction) => total + transaction.amount, 0);
     },
 
     isOverBudget(category) {
       const totalSpent = this.getTotalSpentForCategory(category.id);
       return totalSpent > category.budget;
-    }},
+    },
+  },
 
   // saat komponent dibuat, panggil fetchTransactions
   created() {
-    if (!localStorage.getItem('jwt_token')) {
+    if (!localStorage.getItem("jwt_token")) {
       this.$router.push("/");
       return;
     }
@@ -206,28 +219,23 @@ export default {
 </script>
 
 <template>
-  <!-- Import Modal Component -->
-
-  <!-- modal form untuk setiap kategori -->
-  <formTransaction 
-    v-for="category in categories" 
+  <formTransaction
+    v-for="category in categories"
     :key="category.id"
     :category="category"
     :modal-id="`formTransaction${category.id}`"
-    @submit-event="handleAddEvent" 
+    @submit-event="handleAddEvent"
   />
 
-  <!-- modal card untuk see more -->
-  <transactionCard 
+  <transactionCard
     v-for="transaction in transactions"
     :key="transaction.id"
-    :event-data="transaction" 
+    :event-data="transaction"
     :modal-id="`transactionCard${transaction.id}`"
     @edit-transaction="openEditModal"
     @delete-transaction="handleDeleteEvent"
   />
 
-  <!-- modal edit transaction -->
   <editTransaction
     v-for="transaction in transactions"
     :key="transaction.id"
@@ -236,120 +244,167 @@ export default {
     @update-transaction="handleUpdateEvent"
   />
 
-  <!-- Filter -->
-  <div class="filter d-flex m-3">
-    <div class="filter-date d-flex gap-2 me-2">
-      <div class="start-date">
-        <Datepicker v-model="startDate" />
-      </div>
-      <div class="end-date">
-        <Datepicker v-model="endDate" />
-      </div>
-    </div>
-    <div class="category-filter d-flex gap-2 me-2">
-      <div class="form-check w-100 mw-100" v-for="category in categories" :key="category.id">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          :value="category.name"
-          v-model="selectedCategories"
-        />
-        <label class="form-check-label">
-          {{ category.name }}
-        </label>
-      </div>
-    </div>
+  <!-- Navigation & Filters -->
+  <nav class="bg-white shadow-sm mb-4 rounded-3">
+    <div class="container-fluid p-4">
+      <div class="d-flex flex-column flex-md-row gap-4 align-items-md-center">
+        <!-- Date filters -->
+        <div class="d-flex gap-3 flex-grow-1">
+          <Datepicker v-model="startDate" class="datepicker-custom" />
+          <Datepicker v-model="endDate" class="datepicker-custom" />
+        </div>
 
-    <button
-      class="btn btn-success"
-      type="button"
-      @click="handleFilterEvent">
-      Filter
-    </button>
-  </div>
-  <button
-    class="btn btn-outline-dark"
-    type="button"
-    @click="logout()">
-    Logout
-  </button>
-
-  <!-- menampilkan transaksi -->
-  <table class="table mt-4">
-    <thead>
-      <tr>
-        <!-- Generate table headers for filtered categories -->
-        <th v-for="category in filteredCategories" :key="category.id"
-        :class="[{ 'table-danger': isOverBudget(category) }, category.class]">
-          {{ category.name }}
-          <span v-if="isOverBudget(category)" class="text-danger me-2">Overbudget</span>
-          <button 
-            type="button" 
-            class="btn btn-dark" 
-            data-bs-toggle="modal" 
-            :data-bs-target="`#formTransaction${category.id}`">
-            +
-          </button>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Generate table rows -->
-      <tr v-for="transaction in filteredTransactions" :key="transaction.id">
-        <td 
-          v-for="category in filteredCategories" 
-          :key="category.id"
-          :class="category.class"
-        >
-          <!-- Check if transaction belongs to the current category -->
-          <div 
-            v-if="transaction.category_id === category.id" 
-            class="card" 
-            :data-category-id="category.id" 
-            style="width: 18rem"
+        <!-- Category filters -->
+        <div class="d-flex flex-wrap gap-3 flex-grow-1">
+          <div
+            class="form-check"
+            v-for="category in categories"
+            :key="category.id"
           >
-            <div class="card-body">
-              <h5 class="card-title">{{ transaction.amount }}</h5>
-              <h6 class="card-subtitle mb-2 text-muted">{{ transaction.date }}</h6>
-              <button 
-                class="btn btn-primary" 
-                data-bs-toggle="modal" 
-                :data-bs-target="`#transactionCard${transaction.id}`">
-                See More
+            <input
+              class="form-check-input"
+              type="checkbox"
+              :value="category.name"
+              v-model="selectedCategories"
+            />
+            <label class="form-check-label">{{ category.name }}</label>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="d-flex gap-3">
+          <button
+            class="btn btn-success px-4 py-2"
+            type="button"
+            @click="handleFilterEvent"
+          >
+            Filter
+          </button>
+          <button
+            class="btn btn-outline-danger px-4 py-2"
+            type="button"
+            @click="logout()"
+          >
+            <i class="bi bi-box-arrow-right me-2"></i>Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Transaction Table -->
+  <div class="table-responsive">
+    <table class="table table-hover border">
+      <thead class="table-light">
+        <tr>
+          <th
+            v-for="category in filteredCategories"
+            :key="category.id"
+            :class="[
+              { 'table-danger': isOverBudget(category) },
+              category.class,
+              'p-3',
+            ]"
+          >
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                {{ category.name }}
+                <span v-if="isOverBudget(category)" class="badge bg-danger ms-2"
+                  >Overbudget</span
+                >
+              </div>
+              <button
+                type="button"
+                class="btn btn-dark btn-sm px-2"
+                data-bs-toggle="modal"
+                :data-bs-target="`#formTransaction${category.id}`"
+              >
+                +
               </button>
             </div>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="transaction in filteredTransactions" :key="transaction.id">
+          <td
+            v-for="category in filteredCategories"
+            :key="category.id"
+            :class="[category.class, 'p-3']"
+          >
+            <div
+              v-if="transaction.category_id === category.id"
+              class="card border-0 shadow-sm"
+              :data-category-id="category.id"
+            >
+              <div class="card-body p-3">
+                <h5 class="card-title fw-bold mb-2">
+                  Rp {{ transaction.amount }}
+                </h5>
+                <h6 class="card-subtitle text-muted mb-3 small">
+                  {{ transaction.date }}
+                </h6>
+                <button
+                  class="btn btn-primary btn-sm w-100"
+                  data-bs-toggle="modal"
+                  :data-bs-target="`#transactionCard${transaction.id}`"
+                >
+                  <i class="bi bi-eye me-2"></i>See More
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>
-th button {
-  padding: 0rem 0.3rem;
+/* .datepicker-custom :deep(.dp__input) {
+ border: 1px solid #dee2e6;
+ border-radius: 6px;
+ padding: 8px 12px;
+ font-size: 14px;
+ width: 130px;
+ transition: border-color 0.2s;
 }
 
-h1 {
-  font-weight: 500;
-  font-size: 2.6rem;
-  position: relative;
-  top: -10px;
+.datepicker-custom :deep(.dp__input:focus) {
+ border-color: #86b7fe;
+ outline: 0;
+ box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+} */
+
+.form-check-input:checked {
+ background-color: #198754;
+ border-color: #198754;
 }
 
-h3 {
-  font-size: 1.2rem;
+.btn {
+ font-weight: 500;
+ letter-spacing: 0.3px;
+ transition: all 0.2s;
 }
 
-.greetings h1,
-.greetings h3 {
-  text-align: center;
+.btn-outline-danger {
+ border-width: 2px;
+}
+
+.btn-outline-danger:hover {
+ transform: translateY(-1px);
+}
+
+.btn-sm {
+  font-size: 1rem;
+  line-height: 1;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
 @media (min-width: 1024px) {
-  .greetings h1,
-  .greetings h3 {
-    text-align: left;
+  .card {
+    width: 18rem;
   }
 }
 </style>
