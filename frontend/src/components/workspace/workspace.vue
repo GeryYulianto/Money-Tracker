@@ -183,7 +183,16 @@ export default {
         modal.show();
       }
     },
-  },
+  getTotalSpentForCategory(categoryId) {
+      return this.transactions
+        .filter(transaction => transaction.category_id === categoryId)
+        .reduce((total, transaction) => total + transaction.amount, 0);
+    },
+
+    isOverBudget(category) {
+      const totalSpent = this.getTotalSpentForCategory(category.id);
+      return totalSpent > category.budget;
+    }},
 
   // saat komponent dibuat, panggil fetchTransactions
   created() {
@@ -266,12 +275,14 @@ export default {
   </button>
 
   <!-- menampilkan transaksi -->
-  <table class="table">
+  <table class="table mt-4">
     <thead>
       <tr>
         <!-- Generate table headers for filtered categories -->
-        <th v-for="category in filteredCategories" :key="category.id" :class="category.class">
+        <th v-for="category in filteredCategories" :key="category.id"
+        :class="[{ 'table-danger': isOverBudget(category) }, category.class]">
           {{ category.name }}
+          <span v-if="isOverBudget(category)" class="text-danger me-2">Overbudget</span>
           <button 
             type="button" 
             class="btn btn-dark" 

@@ -136,6 +136,6 @@ class WorkSpaceFeatures:
                 query += f' WHERE category_id IN ({placeholders})'
 
             categories = query_db(query, params)
-            category_list = [{'id': row['category_id'], 'name': row['name'], 'class': row['class']} for row in categories]
+            category_list = [{'id': row['category_id'], 'name': row['name'], 'class': row['class'], 'budget': row['budget']} for row in categories]
 
             return jsonify(category_list)
