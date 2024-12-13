@@ -38,42 +38,27 @@ export default {
       selectedCategories: [],
       startDate : null,
       endDate: null,
-      filteredCategories: []
+      filteredCategories: [
+          { id: 1, name: 'Utilities', class: 'table-primary' },
+          { id: 2, name: 'Education', class: 'table-success' },
+          { id: 3, name: 'Entertainment', class: 'table-warning' },
+          { id: 4, name: 'Food', class: 'table-info' },
+          { id: 5, name: 'Health', class: 'table-danger' }
+        ]
     };
+  },
+  computed: {
+    /**
+     * Filtered transactions that belong to the currently selected filtered categories
+     */
+    filteredTransactions() {
+      return this.transactions.filter(transaction => 
+        this.filteredCategories.some(category => category.id === transaction.category_id)
+      );
+    }
   },
 
   methods: {
-    filterCategories() {
-  const checkboxes = document.querySelectorAll('.form-check-input');
-  
-  // Get selected category names
-  const selectedCategories = Array.from(checkboxes)
-    .filter(checkbox => checkbox.checked)
-    .map(checkbox => checkbox.value);
-
-  // Hide/show table headers
-  document.querySelectorAll('thead th').forEach(header => {
-    const categoryName = header.textContent.trim().replace(/\+$/, '').trim();
-    header.style.display = selectedCategories.length === 0 || selectedCategories.includes(categoryName) ? '' : 'none';
-  });
-
-  // Hide/show cards in each cell
-  document.querySelectorAll('tbody tr').forEach(row => {
-    row.querySelectorAll('th').forEach((cell, index) => {
-      const categoryName = this.categories[index].name;
-      const card = cell.querySelector('.card');
-      
-      if (card) {
-        if (selectedCategories.length === 0 || selectedCategories.includes(categoryName)) {
-          cell.style.display = '';
-          card.style.display = '';
-        } else {
-          cell.style.display = 'none';
-          card.style.display = 'none';
-        }
-      }
-    });  });
-  },
     formatDate(date) {
       if (!date) return null;
       const d = new Date(date);
@@ -165,30 +150,24 @@ export default {
     //Buat filter
     async handleFilterEvent() {
       try {
-        const categories = [
-          { id: 1, name: 'Utilities', class: 'table-primary' },
-          { id: 2, name: 'Education', class: 'table-success' },
-          { id: 3, name: 'Entertainment', class: 'table-warning' },
-          { id: 4, name: 'Food', class: 'table-info' },
-          { id: 5, name: 'Health', class: 'table-danger' }
-        ];
         const token = localStorage.getItem('jwt_token');
-        const selectedCategories = this.selectedCategories.reduce((acc, category) => {
-          acc[category.toLowerCase()] = true;
-          return acc;
-        }, {});
-        const categoryQueryString = new URLSearchParams(selectedCategories).toString();
+        let categoriesFiltered = {}
+        Object.values(this.selectedCategories).forEach(function (val, index) {
+          categoriesFiltered[val] = true
+        })
+        const categoryQueryString = new URLSearchParams(categoriesFiltered).toString();
         const categoryResponse = await axios.get(`http://127.0.0.1:8000/category?${categoryQueryString}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-        const filteredCategoryIds = categoryResponse.data.map(category => category.category_id);
-        this.filteredCategories.value = categories.filter(category => filteredCategoryIds.includes(category.id));
+
+        this.filteredCategories= categoryResponse['data']
+        console.log(this.filteredCategories)
 
         const args = {
-          // start_date: this.formatDate(this.startDate),
-          // end_date: this.formatDate(this.endDate)
+          start_date: this.formatDate(this.startDate),
+          end_date: this.formatDate(this.endDate)
         };
         this.fetchTransactions(args);
       } catch (error) {
@@ -265,7 +244,6 @@ export default {
           type="checkbox"
           :value="category.name"
           v-model="selectedCategories"
-          @change="filterCategories"
         />
         <label class="form-check-label">
           {{ category.name }}
@@ -288,40 +266,40 @@ export default {
   </button>
 
   <!-- menampilkan transaksi -->
-  <table class="table m-5">
+  <table class="table">
     <thead>
       <tr>
-        <th 
-          v-for="category in (this.filteredCategories.length > 0 ? this.filteredCategories : categories)" 
-          :key="category.id" 
-          :class="category.class"
-        >
+        <!-- Generate table headers for filtered categories -->
+        <th v-for="category in filteredCategories" :key="category.id" :class="category.class">
           {{ category.name }}
           <button 
             type="button" 
-            class="btn btn-dark"
+            class="btn btn-dark" 
             data-bs-toggle="modal" 
-            :data-bs-target="`#formTransaction${category.id}`"
-          >
+            :data-bs-target="`#formTransaction${category.id}`">
             +
           </button>
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="transaction in transactions" :key="transaction.id">
-        <th v-for="categoryId in [1, 2, 3, 4, 5]" :key="categoryId">
-          <div
-          v-if="categoryId === transaction.category_id"
-          class="card"
-          :data-category-id="categoryId"
-          style="width: 18rem"
+      <!-- Generate table rows -->
+      <tr v-for="transaction in filteredTransactions" :key="transaction.id">
+        <td 
+          v-for="category in filteredCategories" 
+          :key="category.id"
+          :class="category.class"
         >
+          <!-- Check if transaction belongs to the current category -->
+          <div 
+            v-if="transaction.category_id === category.id" 
+            class="card" 
+            :data-category-id="category.id" 
+            style="width: 18rem"
+          >
             <div class="card-body">
               <h5 class="card-title">{{ transaction.amount }}</h5>
-              <h6 class="card-subtitle mb-2 text-muted">
-                {{ transaction.date }}
-              </h6>
+              <h6 class="card-subtitle mb-2 text-muted">{{ transaction.date }}</h6>
               <button 
                 class="btn btn-primary" 
                 data-bs-toggle="modal" 
@@ -330,7 +308,7 @@ export default {
               </button>
             </div>
           </div>
-        </th>
+        </td>
       </tr>
     </tbody>
   </table>

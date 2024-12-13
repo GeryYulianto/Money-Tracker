@@ -21,11 +21,12 @@ class WorkSpaceFeatures:
                 user = get_jwt_identity() 
                 params = [user] if user else ['admin']
 
-                if start_date:
+                if start_date != None and start_date != 'null':
+                    print(start_date, 'aaaa')
                     query += ' AND date >= ?'
                     params.append(start_date)
                 
-                if end_date:
+                if end_date != None and end_date != 'null':
                     query += ' AND date <= ?'
                     params.append(end_date)
 
@@ -107,33 +108,34 @@ class WorkSpaceFeatures:
         @self.app.route('/category', methods=['GET'])
         @jwt_required()
         def category():
-            utilities = request.args.get('utilities')
-            education = request.args.get('education')
-            entertainment = request.args.get('entertainment')
-            food = request.args.get('food')
-            health = request.args.get('health')
+            utilities = request.args.get('Utilities')
+            education = request.args.get('Education')
+            entertainment = request.args.get('Entertainment')
+            food = request.args.get('Food')
+            health = request.args.get('Health')
 
             query = '''
                 SELECT * FROM category
                 '''
 
             params = []
-            if utilities:
+            if utilities != None and utilities != 'null':
                 params.append(1)
-            if education:
+            if education != None and education!= 'null':
                 params.append(2)
-            if entertainment:
+            if entertainment != None and entertainment != 'null':
                 params.append(3)
-            if food:
+            if food != None and food != 'null':
                 params.append(4)
-            if health:
+            if health != None and health != 'null':
                 params.append(5)
 
+            print(params)
             if params:
                 placeholders = ','.join(['?'] * len(params))
                 query += f' WHERE category_id IN ({placeholders})'
 
             categories = query_db(query, params)
-            category_list = [dict(row) for row in categories]
+            category_list = [{'id': row['category_id'], 'name': row['name'], 'class': row['class']} for row in categories]
 
             return jsonify(category_list)
