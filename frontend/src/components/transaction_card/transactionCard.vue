@@ -1,5 +1,6 @@
 <template>
-  <div class="modal fade" :id="`transactionCard${eventData.id}`" tabindex="-1">
+  <!-- <div class="modal fade" :id="`transactionCard${eventData.id}`" tabindex="-1"> -->
+  <div class="modal fade" :id="modalId" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-sm">
         <div class="modal-header border-bottom-0 py-3">
@@ -17,15 +18,25 @@
         <div class="modal-body py-4">
           <p class="text-secondary mb-0">{{ eventData.description }}</p>
         </div>
+
         <div class="modal-footer border-top-0">
-          <button
+          <!-- <button
             type="button"
             class="btn btn-warning text-white fw-semibold"
             data-bs-dismiss="modal"
             @click="editTransaction"
           >
             <i class="bi bi-pencil me-2"></i>Edit
+          </button> -->
+
+          <button
+            type="button"
+            class="btn btn-warning text-white fw-semibold"
+            @click="editTransaction"
+          >
+            <i class="bi bi-pencil me-2"></i>Edit
           </button>
+
           <button
             type="button"
             class="btn btn-danger fw-semibold"
@@ -65,9 +76,14 @@ export default {
     },
   },
   methods: {
+    // editTransaction() {
+    //   this.$emit("edit-transaction", this.eventData);
+    // },
+
     editTransaction() {
-      this.$emit("edit-transaction", this.eventData);
+      this.$emit("edit-event", this.eventData);
     },
+
     async deleteTransaction() {
       try {
         const token = localStorage.getItem("jwt_token");

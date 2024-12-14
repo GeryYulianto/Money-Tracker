@@ -1,12 +1,5 @@
 <template>
-  <div
-    v-if="transactionData"
-    class="modal fade"
-    :id="`editTransaction${transactionData.id}`"
-    tabindex="-1"
-    aria-labelledby="editEventModalLabel"
-    aria-hidden="true"
-  >
+  <div class="modal fade" :id="modalId" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -60,7 +53,7 @@
               >
                 Close
               </button>
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">
                 Update Transaction
               </button>
             </div>
@@ -70,24 +63,19 @@
     </div>
   </div>
 </template>
-  
+
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   props: {
     transactionData: {
       type: Object,
-      default: () => ({
-        id: null,
-        amount: 0,
-        category_id: "",
-        date: ""
-      })
+      required: true
     },
     modalId: {
       type: String,
-      default: ''
+      required: true
     }
   },
   data() {
@@ -112,21 +100,25 @@ export default {
     formatDateForBackend(date) {
       if (!date) return null;
       const d = new Date(date);
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
       const year = d.getFullYear();
       return `${day}/${month}/${year}`;
     },
     async submitForm() {
       try {
-        const token = localStorage.getItem('jwt_token');
+        const token = localStorage.getItem("jwt_token");
         const formattedDate = this.formatDateForBackend(this.formData.date);
         const formData = { ...this.formData, date: formattedDate };
-        const response = await axios.put(`http://127.0.0.1:8000/transactions`, formData, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const response = await axios.put(
+          `http://127.0.0.1:8000/transactions`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
         this.$emit("update-transaction", response.data);
       } catch (error) {
         console.error("Update error:", error);

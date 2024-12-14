@@ -68,6 +68,7 @@ export default {
       const day = String(d.getDate()).padStart(2, "0");
       const year = d.getFullYear();
       return `${month}/${day}/${year}`;
+      // return `${year}-${month}-${date}`;
     },
 
     async logout() {
@@ -102,7 +103,7 @@ export default {
           }
         );
         this.transactions = response.data;
-        console.log("Transactions:", this.transactions);
+        // console.log("Transactions:", this.transactions);
       } catch (error) {
         if (error.response?.status === 401) {
           localStorage.removeItem("jwt_token");
@@ -114,6 +115,7 @@ export default {
 
     // Update handleAddEvent to refresh transactions
     handleAddEvent(eventData) {
+      console.log(eventData);
       // Refresh transactions after adding a new one
       this.fetchTransactions();
       const modal = bootstrap.Modal.getInstance(
@@ -126,6 +128,7 @@ export default {
 
     // Update event to handle transaction update
     handleUpdateEvent(eventData) {
+      console.log(eventData);
       this.fetchTransactions();
       const modal = bootstrap.Modal.getInstance(
         document.getElementById(`editTransaction${eventData.transaction_id}`)
@@ -135,16 +138,46 @@ export default {
       }
     },
 
-    // edit transaction
-    handleEditEvent(eventData) {
-      // Refresh transactions after editing
-      this.fetchTransactions();
-      const modal = bootstrap.Modal.getInstance(
-        document.getElementById(`transactionCard${eventData.transaction_id}`)
-      );
-      if (modal) {
-        modal.hide();
+    // handleEditEvent(eventData) {
+    //   console.log(eventData);
+    //   // console.log('Transaction ID:', eventData.id);
+    //   // console.log('Transaction_ID:', eventData.transaction_id);
+
+    //   // Refresh transactions after editing
+    //   this.fetchTransactions();
+    //   const modal = bootstrap.Modal.getInstance(
+    //     document.getElementById(`transactionCard${eventData.transaction_id}`)
+    //   );
+    //   if (modal) {
+    //     modal.hide();
+    //   }
+    // },
+
+    handleEditEvent(transaction) {
+      if (transaction) {
+        // Close current modal first
+        const currentModal = bootstrap.Modal.getInstance(
+          document.getElementById(
+            `transactionCard${transaction.transaction_id}`
+          )
+        );
+        if (currentModal) {
+          currentModal.hide();
+        }
+        // Open edit modal
+        const editModal = new bootstrap.Modal(
+          document.getElementById(
+            `editTransaction${transaction.transaction_id}`
+          )
+        );
+        editModal.show();
       }
+    },
+    handleTransactionClick(transaction) {
+      const modal = new bootstrap.Modal(
+        document.getElementById(`transactionCard${transaction.transaction_id}`)
+      );
+      modal.show();
     },
 
     // Add method to handle transaction deletion
@@ -173,7 +206,7 @@ export default {
         );
 
         this.filteredCategories = categoryResponse["data"];
-        console.log(this.filteredCategories);
+        // console.log(this.filteredCategories);
 
         const args = {
           start_date: this.formatDate(this.startDate),
@@ -186,15 +219,17 @@ export default {
     },
 
     // Update to open edit modal
-    openEditModal(transaction) {
-      // Ensure transaction is not null before setting
-      if (transaction) {
-        const modal = new bootstrap.Modal(
-          document.getElementById(`editTransaction${transaction.id}`)
-        );
-        modal.show();
-      }
-    },
+    // openEditModal(transaction) {
+    //   console.log(transaction);
+    //   // Ensure transaction is not null before setting
+    //   if (transaction) {
+    //     const modal = new bootstrap.Modal(
+    //       document.getElementById(`editTransaction${transaction.id}`)
+    //     );
+    //     modal.show();
+    //   }
+    // },
+
     getTotalSpentForCategory(categoryId) {
       return this.transactions
         .filter((transaction) => transaction.category_id === categoryId)
@@ -209,6 +244,7 @@ export default {
 
   // saat komponent dibuat, panggil fetchTransactions
   created() {
+    // console.log(this.transactions)
     if (!localStorage.getItem("jwt_token")) {
       this.$router.push("/");
       return;
@@ -227,20 +263,37 @@ export default {
     @submit-event="handleAddEvent"
   />
 
-  <transactionCard
+  <!-- <transactionCard
     v-for="transaction in transactions"
     :key="transaction.id"
     :event-data="transaction"
     :modal-id="`transactionCard${transaction.id}`"
     @edit-transaction="openEditModal"
     @delete-transaction="handleDeleteEvent"
+  /> -->
+
+  <transactionCard
+    v-for="transaction in transactions"
+    :key="transaction.transaction_id"
+    :event-data="transaction"
+    :modal-id="`transactionCard${transaction.transaction_id}`"
+    @edit-event="handleEditEvent"
+    @delete-transaction="handleDeleteEvent"
   />
 
-  <editTransaction
+  <!-- <editTransaction
     v-for="transaction in transactions"
     :key="transaction.id"
     :transaction-data="transaction"
     :modal-id="`editTransaction${transaction.id}`"
+    @update-transaction="handleUpdateEvent"
+  /> -->
+
+  <editTransaction
+    v-for="transaction in transactions"
+    :key="transaction.transaction_id"
+    :transaction-data="transaction"
+    :modal-id="`editTransaction${transaction.transaction_id}`"
     @update-transaction="handleUpdateEvent"
   />
 
@@ -344,10 +397,18 @@ export default {
                 <h6 class="card-subtitle text-muted mb-3 small">
                   {{ transaction.date }}
                 </h6>
-                <button
+
+                <!-- <button
                   class="btn btn-primary btn-sm w-100"
                   data-bs-toggle="modal"
                   :data-bs-target="`#transactionCard${transaction.id}`"
+                >
+                  <i class="bi bi-eye me-2"></i>See More
+                </button> -->
+
+                <button
+                  class="btn btn-primary btn-sm w-100"
+                  @click="handleTransactionClick(transaction)"
                 >
                   <i class="bi bi-eye me-2"></i>See More
                 </button>
@@ -377,22 +438,22 @@ export default {
 } */
 
 .form-check-input:checked {
- background-color: #198754;
- border-color: #198754;
+  background-color: #198754;
+  border-color: #198754;
 }
 
 .btn {
- font-weight: 500;
- letter-spacing: 0.3px;
- transition: all 0.2s;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
 }
 
 .btn-outline-danger {
- border-width: 2px;
+  border-width: 2px;
 }
 
 .btn-outline-danger:hover {
- transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .btn-sm {
