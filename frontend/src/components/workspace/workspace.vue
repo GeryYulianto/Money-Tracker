@@ -39,11 +39,6 @@ export default {
       startDate: null,
       endDate: null,
       filteredCategories: [
-        { id: 1, name: "Utilities", class: "table-primary" },
-        { id: 2, name: "Education", class: "table-success" },
-        { id: 3, name: "Entertainment", class: "table-warning" },
-        { id: 4, name: "Food", class: "table-info" },
-        { id: 5, name: "Health", class: "table-danger" },
       ],
     };
   },
@@ -249,7 +244,7 @@ export default {
       this.$router.push("/");
       return;
     }
-    this.fetchTransactions();
+    this.handleFilterEvent();
   },
 };
 </script>
@@ -379,44 +374,40 @@ export default {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="transaction in filteredTransactions" :key="transaction.id">
+        <tr>
           <td
             v-for="category in filteredCategories"
             :key="category.id"
             :class="[category.class, 'p-3']"
           >
-            <div
-              v-if="transaction.category_id === category.id"
-              class="card border-0 shadow-sm"
-              :data-category-id="category.id"
-            >
-              <div class="card-body p-3">
-                <h5 class="card-title fw-bold mb-2">
-                  Rp {{ transaction.amount }}
-                </h5>
-                <h6 class="card-subtitle text-muted mb-3 small">
-                  {{ transaction.date }}
-                </h6>
-
-                <!-- <button
-                  class="btn btn-primary btn-sm w-100"
-                  data-bs-toggle="modal"
-                  :data-bs-target="`#transactionCard${transaction.id}`"
-                >
-                  <i class="bi bi-eye me-2"></i>See More
-                </button> -->
-
-                <button
-                  class="btn btn-primary btn-sm w-100"
-                  @click="handleTransactionClick(transaction)"
-                >
-                  <i class="bi bi-eye me-2"></i>See More
-                </button>
+            <div>
+              <!-- Filter transactions by category -->
+              <div
+                v-for="transaction in filteredTransactions.filter(t => t.category_id === category.id)"
+                :key="transaction.id"
+                class="card border-0 shadow-sm mb-2"
+                :data-category-id="category.id"
+              >
+                <div class="card-body p-3">
+                  <h5 class="card-title fw-bold mb-2">
+                    Rp {{ transaction.amount }}
+                  </h5>
+                  <h6 class="card-subtitle text-muted mb-3 small">
+                    {{ transaction.date }}
+                  </h6>
+                  <button
+                    class="btn btn-primary btn-sm w-100"
+                    @click="handleTransactionClick(transaction)"
+                  >
+                    <i class="bi bi-eye me-2"></i>See More
+                  </button>
+                </div>
               </div>
             </div>
           </td>
         </tr>
       </tbody>
+
     </table>
   </div>
 </template>
@@ -436,6 +427,12 @@ export default {
  outline: 0;
  box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
 } */
+
+.table-responsive {
+  width: 100%;
+  max-width: 100vw; /* Ensures the table fits within the viewport width */
+  overflow-x: auto; /* Ensures scrollable content if needed */
+}
 
 .form-check-input:checked {
   background-color: #198754;
